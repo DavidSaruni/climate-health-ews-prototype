@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+data/feedback.csv
+.venv/
+.claude/
+.pytest_cache/
