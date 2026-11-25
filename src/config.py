@@ -5,7 +5,7 @@ edited without touching the modelling code.
 """
 
 APP_TITLE = "Climate-Health Early Warning Prototype"
-APP_VERSION = "0.1.0 (prototype, round 1)"
+APP_VERSION = "0.2.0 (prototype, round 1)"
 
 # Study sites (proposal section 5.2). Sub-units are used for the equity view.
 SITES = {
@@ -58,6 +58,37 @@ SITES = {
         "vulnerability": 0.70,
     },
 }
+
+
+def _load_form_locations():
+    """Use the real sub-county / TA lists from the Kobo forms (docs/forms), so area codes in
+    the prototype match the codes the field teams will record."""
+    import csv
+    from pathlib import Path
+    forms = Path(__file__).resolve().parent.parent / "docs" / "forms"
+    try:
+        with open(forms / "household_district.csv", newline="", encoding="utf-8") as f:
+            districts = {r["name"]: r["label"] for r in csv.DictReader(f)}
+        with open(forms / "household_subcounty_TA.csv", newline="", encoding="utf-8") as f:
+            subs = list(csv.DictReader(f))
+    except FileNotFoundError:
+        return
+    for code, site in districts.items():
+        if site in SITES:
+            SITES[site]["code"] = int(code)
+            rows = [r for r in subs if r["LGA"] == code]
+            if rows:
+                SITES[site]["sub_units"] = [r["label"] for r in rows]
+                SITES[site]["sub_unit_codes"] = [int(r["name"]) for r in rows]
+
+
+_load_form_locations()
+
+
+def area_id(site: str, i: int) -> str:
+    """Area key: site prefix + the Kobo sub-county/TA code (A3_subcounty / A3_subcounty_ta)."""
+    codes = SITES[site].get("sub_unit_codes")
+    return f"{site[:3].upper()}-{codes[i] if codes else i + 1:02d}"
 
 # Climate-sensitive outcomes modelled (proposal sections 5.1 and 5.4.3).
 OUTCOMES = {

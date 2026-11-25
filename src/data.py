@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .config import OUTCOMES, SITES, VULNERABILITY_GROUPS
+from .config import OUTCOMES, SITES, VULNERABILITY_GROUPS, area_id as make_area_id
 
 CLIMATE_START = "2006-01-01"   # gives a 20-year climate baseline
 HEALTH_START = "2018-01-01"    # > 5 years of facility-level monthly HMIS data
@@ -100,12 +100,12 @@ def build_warehouse(seed: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
         climate_frames.append(clim)
 
         for i, sub in enumerate(meta["sub_units"]):
-            area_id = f"{site[:3].upper()}{i + 1:02d}"
+            area_id = make_area_id(site, i)
             sub_rng = np.random.default_rng(rng.integers(1e9))
             vuln = float(np.clip(meta["vulnerability"] + sub_rng.normal(0, 0.06), 0.2, 0.95))
             readiness = float(np.clip(1 - vuln + sub_rng.normal(0, 0.08), 0.15, 0.9))
             surge_cap = float(np.clip(readiness + sub_rng.normal(0, 0.07), 0.1, 0.9))
-            pop = int(sub_rng.uniform(80_000, 320_000))
+            pop = int(sub_rng.uniform(40_000, 220_000))
             shares = np.clip(np.array([0.30, 0.17, 0.06, 0.04, 0.20]) * (0.8 + 0.4 * vuln)
                              + sub_rng.normal(0, 0.01, 5), 0.01, 0.6)
             df = clim.copy()

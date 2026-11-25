@@ -5,3 +5,4 @@ data/feedback.csv
 .venv/
 .claude/
 .pytest_cache/
+data/cache/

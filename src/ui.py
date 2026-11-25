@@ -31,7 +31,8 @@ def get_data():
     if up is not None:
         wh = fill_optional(up)
         key = "upload-" + hashlib.md5(pd.util.hash_pandas_object(wh).values.tobytes()).hexdigest()
-        return wh, _features(key, wh, None), key, "Uploaded file"
+        clim = st.session_state.get("uploaded_clim")
+        return wh, _features(key, wh, clim), key, st.session_state.get("uploaded_label", "Uploaded file")
     clim, wh = _synthetic()
     return wh, _features("synthetic", wh, clim), "synthetic", "Synthetic (simulated)"
 
@@ -58,19 +59,30 @@ def get_spatial(data_key: str, outcome: str, model_name: str, h: int, _feat):
     return pipeline.spatial_validation(_feat, outcome, model_name, h)
 
 
+def available_outcomes(wh: pd.DataFrame) -> list[str]:
+    """Outcomes with enough data to model (at least 36 months in most areas)."""
+    out = [k for k in OUTCOMES if k in wh and wh.groupby("area_id")[k].count().median() >= 36]
+    return out or [k for k in OUTCOMES if k in wh and wh[k].notna().any()]
+
+
 # ------------------------------------------------------------------ sidebar
 def sidebar_controls(show_site=True, show_outcome=True, show_model=True):
     ss = st.session_state
     ss.setdefault("site", list(SITES)[0])
     ss.setdefault("outcome", "malaria")
     ss.setdefault("model", DEFAULT_MODEL)
+    wh = get_data()[0]
     with st.sidebar:
         if show_site:
-            sites = list(SITES)
+            sites = [s for s in SITES if s in set(wh["site"])] or list(SITES)
+            if ss.site not in sites:
+                ss.site = sites[0]
             ss.site = st.selectbox("County / district", sites, index=sites.index(ss.site),
                                    format_func=lambda s: f"{s} ({SITES[s]['country']})")
         if show_outcome:
-            outs = list(OUTCOMES)
+            outs = available_outcomes(wh)
+            if ss.outcome not in outs:
+                ss.outcome = outs[0]
             ss.outcome = st.selectbox("Health outcome", outs, index=outs.index(ss.outcome),
                                       format_func=lambda k: OUTCOMES[k]["label"])
         if show_model:

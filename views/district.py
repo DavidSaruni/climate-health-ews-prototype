@@ -79,7 +79,9 @@ with e1:
 
 with e2:
     st.markdown("**Predicted cases by vulnerability group**")
-    rr = np.array(GROUP_RELATIVE_RISK[outcome])
+    real_rr = st.session_state.get("group_rr")
+    rr = (real_rr["relative_risk"].fillna(1).clip(0.2, 5).values if real_rr is not None and outcome != "anc"
+          else np.array(GROUP_RELATIVE_RISK[outcome]))
     total = a["mean"].sum()
     groups = []
     for i, g in enumerate(VULNERABILITY_GROUPS):
@@ -93,7 +95,8 @@ with e2:
                            hovertemplate="%{y}: %{x:,.0f}<extra></extra>"))
     fig.update_layout(height=260, margin=dict(l=0, r=0, t=0, b=0), xaxis_title="Expected cases")
     st.plotly_chart(fig, width="stretch")
-    st.caption("Population share x placeholder relative risk. Groups overlap, so bars do not add up.")
+    st.caption("Population share x relative risk " + ("from the household survey (any illness, 2 weeks)"
+               if real_rr is not None else "(placeholder)") + ". Groups overlap, so bars do not add up.")
 
 st.markdown("**Sex-disaggregated demand projection**")
 fem = np.average(a["opd_female_share"], weights=a["pop_target"]) if "opd_female_share" in a else 0.56
@@ -105,10 +108,14 @@ if outcome == "anc":
 else:
     s1.metric("Expected cases: women and girls", f"{total * fem:,.0f}")
     s2.metric("Expected cases: men and boys", f"{total * (1 - fem):,.0f}")
-    anc_fc = ui.get_forecast(key, "anc", model_name, feat)[1]
-    anc = anc_fc[(anc_fc.site == site) & (anc_fc.horizon == h_sel)].iloc[0]
-    s3.metric("ANC and maternal visits expected", f"{anc['mean']:,.0f}",
-              help=f"ANC alert: {anc.alert} ({anc.risk_score}/100)")
+    if "anc" in ui.available_outcomes(wh):
+        anc_fc = ui.get_forecast(key, "anc", model_name, feat)[1]
+        anc = anc_fc[(anc_fc.site == site) & (anc_fc.horizon == h_sel)].iloc[0]
+        s3.metric("ANC and maternal visits expected", f"{anc['mean']:,.0f}",
+                  help=f"ANC alert: {anc.alert} ({anc.risk_score}/100)")
+    else:
+        s3.metric("ANC and maternal visits expected", "No data",
+                  help="The facility form has no monthly ANC counts yet. Add them, or load DHIS2 ANC data.")
 
 # ---------------------------------------------------------------- 4: actions
 st.subheader("4. Recommended preparedness actions")

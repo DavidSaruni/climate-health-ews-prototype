@@ -12,7 +12,14 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
+from types import SimpleNamespace
+
+# Import only the GLM pieces (statsmodels.api also loads time-series modules we don't use)
+from statsmodels.genmod import families as _families
+from statsmodels.genmod.generalized_linear_model import GLM as _GLM
+from statsmodels.tools.tools import add_constant as _add_constant
+
+sm = SimpleNamespace(GLM=_GLM, families=_families, add_constant=_add_constant)
 import xgboost as xgb
 from scipy import stats
 from sklearn.ensemble import RandomForestRegressor

@@ -10,6 +10,7 @@ pages = {
         st.Page("views/overview.py", title="Overview", icon="🗺️", default=True),
         st.Page("views/district.py", title="District view", icon="🚦"),
         st.Page("views/drivers.py", title="Risk drivers", icon="🔍"),
+        st.Page("views/studio.py", title="Geospatial Studio", icon="🛰️"),
     ],
     "Model": [
         st.Page("views/validation.py", title="Model validation", icon="📏"),

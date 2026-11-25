@@ -15,7 +15,7 @@ st.markdown(f"""
 
 | Stage | Proposal | In this prototype | Still to do |
 |---|---|---|---|
-| 1. Data | 5.7.2 | Four simulated streams for 6 sites, 24 sub-units, Jan 2018 to latest month; 20-year climate record for baselines | Real KMD/DCMS and DHIS2 extracts (Month 14); survey and facility data (Months 15 to 17) |
+| 1. Data | 5.7.2 | Simulated streams for 6 sites and their 56 sub-counties / TAs (Kobo codes); importers for the real Kobo household and facility exports and DHIS2; NASA POWER climate | Real extracts (Month 14); survey and facility data (Months 15 to 17); KMD / DCCMS station data |
 | 2. Warehouse | 5.7.2 | One row per area per month; data dictionary; CSV upload and validation | DHIS2 and KMD/DCMS API connectors; geopandas boundaries |
 | 3. Features | 5.7.3 | 30/90-day rainfall anomalies vs baseline; SPEI-1/3 (approximation); temperature anomaly; heat days; flood and drought flags; lagged case rates; stock-outs; referral functionality; readiness; vulnerability index; seasonal outlook | Full SPEI (log-logistic fit, Hargreaves PET); site-specific heat thresholds agreed with KMD/DCMS |
 | 4. Models | 5.7.4 | Negative binomial and quasi-Poisson GLMs; Random Forest; XGBoost; seasonal-naive benchmark; SHAP via XGBoost TreeSHAP | LSTM for temporal sequences once real series are available; per outcome-site GLMs |
